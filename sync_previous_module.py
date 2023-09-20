@@ -40,11 +40,12 @@ try:
     for file in files_to_move:
         print(f"Moving file : ", file)
         shutil.copy(
-            os.path.join(grandparent_path, source, file),
+            os.path.join(os.path.join(grandparent_path, source), file),
             os.path.join(grandparent_path, dest, file),
         )
     print(f"Finished moving {len(files_to_move)} files")
 except Exception as e:
+    print(e)
     print(
         "Something went wrong! please check if the source and destination folders are present in same folder"
     )

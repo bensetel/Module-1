@@ -8,7 +8,7 @@ from typing_extensions import Protocol
 
 
 def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) -> Any:
-    r"""
+    """
     Computes an approximation to the derivative of `f` with respect to one arg.
 
     See :doc:`derivative` or https://en.wikipedia.org/wiki/Finite_difference for more details.
@@ -22,8 +22,17 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
     Returns:
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
-    # TODO: Implement for Task 1.1.
-    raise NotImplementedError("Need to implement for Task 1.1")
+    i = arg
+    forward_vals = list(vals[:i])
+    forward_vals.extend([vals[i]+epsilon/2])
+    forward_vals.extend(list(vals[i+1:]))
+
+    backward_vals == list(vals[:i])
+    backward_vals.extend([vals[i]-epsilon/2])
+    backward_vals.extend(list(vals[i+1:]))
+
+    return(f(foward_vals) - f(backward_vals))
+    
 
 
 variable_count = 1
@@ -61,8 +70,21 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+    visited = set()
+    sorted_list = []
+    
+    def do_sort(var):
+        if (var.unique_id in visited) or var.is_constant():
+            return
+        if not(var.is_leaf()):
+            for parent in var.parents:
+                do_sort(parent)
+        sorted_list.insert(0, var)
+        visited.add(var.unique_id)
+        
+    do_sort(variable)
+    
+    return sorted_list
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -76,10 +98,44 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
 
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
-
-
+    sorted_vars = topological_sort(variable)
+    der_dict = {var.unique_id : 0 for var in sorted_vars}
+    der_dict[variable.unique_id] = deriv
+    for var in sorted_vars:
+        d_out = der_dict[var.unique_id]
+        if var.is_leaf():
+            var.accumulate_derivative(d_out)
+            if var.unique_id % 100 == 0:
+                """
+                print('-'*20)
+                print('leaf!')
+                print('uid:', var.unique_id)
+                print('derivative:', var.derivative)
+                print('d_out:', d_out)
+                print('history:', var.history)
+                """
+        else:
+            back = var.chain_rule(d_out)
+            if var.unique_id % 100 == 0:
+                """
+                print('='*20)
+                print('non-leaf!')
+                print('var:', var)
+                print('var uid:', var.unique_id)
+                print('history:', var.history)
+                print('d_out:', d_out)
+                """
+            for back_var, back_d in back:
+                der_dict[back_var.unique_id] += back_d
+                if var.unique_id % 100 == 0:
+                    """
+                    print('-'*10)
+                    print('back_uid:', back_var.unique_id)
+                    print('back_var:', back_var)
+                    print('back_hist:', back_var.history)
+                    print('back_d:', back_d)
+                    print('derdict:', der_dict[back_var.unique_id])
+                    """
 @dataclass
 class Context:
     """

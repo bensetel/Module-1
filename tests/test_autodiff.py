@@ -39,6 +39,8 @@ class Function2(ScalarFunction):
 # Checks for the chain rule function.
 
 
+
+
 @pytest.mark.task1_3
 def test_chain_rule1() -> None:
     x = minitorch.Scalar(0.0)
